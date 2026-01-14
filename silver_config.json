@@ -1,0 +1,26 @@
+{
+    "settings": {
+        "account_id": "d699eaca8e066e1bfaee9679eecb8fe1",
+        "gateway_id": "silver-ai-hub",
+        "api_token": "GpZ6dD-jPVIIN5vjDFizgJ9_aIFUFpVl0hwFmI45",
+        "provider": "workers-ai"
+    },
+    "industries": {
+        "silver_marketing": {
+            "global_context": "You are an advanced AI assistant for Silver Ant Marketing, a full-service digital marketing agency. You help structure marketing strategies, manage improved workflows for SEO, PPC, and SMM, and interact with the developing Stratos Agency OS.",
+            "personas": {
+                "marketing_strategist": {
+                    "model": "@cf/meta/llama-3.1-8b-instruct",
+                    "instruction": "Provide professional digital marketing advice, campaign ideas, and strategic insights.",
+                    "temp": 0.5
+                }
+            }
+        },
+        "auth": {
+            "google": {
+                "client_id": "YOUR_GOOGLE_CLIENT_ID",
+                "client_secret": "YOUR_GOOGLE_CLIENT_SECRET"
+            }
+        }
+    }
+}
