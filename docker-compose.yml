@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./laravel-backend
+      args:
+        user: laravel
+        uid: 1000
+    image: silver-ai-backend
+    container_name: silver-ai-backend
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./laravel-backend:/var/www
+    networks:
+      - silver-ai
+    entrypoint: ["/bin/bash", "/var/www/docker/entrypoint.sh"]
+
+  webserver:
+    image: nginx:alpine
+    container_name: silver-ai-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./laravel-backend:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - silver-ai
+
+  frontend:
+    build:
+      context: ./nextjs-app
+    image: silver-ai-frontend
+    container_name: silver-ai-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./nextjs-app:/app
+      - /app/node_modules
+    networks:
+      - silver-ai
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+
+networks:
+  silver-ai:
+    driver: bridge
