@@ -15,7 +15,11 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silver AI Console</title>
+    <meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="bingbot" content="noindex, nofollow">
+
+    <title>Elara - Silver Ant Marketing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -185,7 +189,7 @@ if (isset($_SESSION['user_id'])) {
                 title: 'New Chat',
                 messages: [{
                     role: 'system',
-                    content: 'Hello! I am the Silver AI, ready to assist with Silver Ant Marketing operations. How can I help you today?',
+                    content: 'Hello! I am Elara the Silver Ant\'s AI Assistant, ready to assist with Silver Ant Marketing operations. How can I help you today?',
                     timestamp: Date.now()
                 }]
             };
