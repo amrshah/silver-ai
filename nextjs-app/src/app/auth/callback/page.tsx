@@ -22,7 +22,7 @@ export default function GoogleCallback() {
                 const data = await handleGoogleCallback(query);
                 if (data.access_token) {
                     // Redirect to home which will now be authenticated
-                    window.location.href = '/';
+                    router.push('/');
                 } else {
                     setError(data.error || 'Authentication failed');
                 }

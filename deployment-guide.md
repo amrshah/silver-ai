@@ -17,74 +17,78 @@ Before deploying, you must configure Google OAuth for the "Corporate Google Acco
 5.  Click **Create Credentials > OAuth client ID**.
     *   Application type: **Web application**.
     *   **Authorized JavaScript origins**: `https://your-frontend-domain.com`
-    *   **Authorized redirect URIs**: `https://your-backend-domain.com/api/auth/google/callback`
+    *   **Authorized redirect URIs**: `https://elara.silverantacademy.com/api/auth/google/callback`
 6.  Copy your **Client ID** and **Client Secret**.
 
 ---
 
-## 2. Backend Deployment (Laravel - Hostinger VPS)
+## 2. Backend Deployment (Laravel - Hostinger Shared Hosting)
 
-*Recommended OS: Ubuntu 22.04 LTS with Nginx.*
+Shared hosting requires a specific directory structure. We will place the core files in a private folder and the public files in `public_html`.
 
-### Step 1: Clone and Install
-```bash
-git clone -b main https://github.com/your-repo/silver-ai.git
-cd silver-ai/laravel-backend
-composer install --optimize-autoloader --no-dev
+### Step 1: Uploading Files
+1.  Compress all files in `laravel-backend/` (except `vendor`, `node_modules`, and `.env`).
+2.  In Hostinger's **File Manager**, create a folder named `silver_backend` in the root directory (one level *above* `public_html`).
+3.  Upload and extract your files into `silver_backend`.
+4.  Move everything inside `silver_backend/public/` into your `public_html` folder.
+
+### Step 2: Fix Path Mapping
+Edit `public_html/index.php` and update these two lines (approx. lines 34 and 47) to point to your private folder:
+```php
+// Old: 
+// require __DIR__.'/../vendor/autoload.php';
+// $app = require_once __DIR__.'/../bootstrap/app.php';
+
+// New:
+require __DIR__.'/../silver_backend/vendor/autoload.php';
+$app = require_once __DIR__.'/../silver_backend/bootstrap/app.php';
 ```
 
-### Step 2: Configure Environment
-Copy `.env.example` to `.env` and update the following:
-```env
-APP_NAME="Silver AI Core"
-APP_ENV=production
-APP_KEY=base64:... # Generate using: php artisan key:generate
+### Step 3: Configure Environment
+1.  Create a MySQL Database in **Hostinger hPanel > Databases**.
+2.  Copy your `.env` content to `silver_backend/.env` and update the `DB_` credentials with the ones Hostinger provided.
+3.  Ensure `APP_URL` is set to `https://elara.silverantacademy.com`.
+4.  Set `GOOGLE_REDIRECT_URI` to `https://elara.silverantacademy.com/api/auth/google/callback`.
 
-# Database (Hostinger MySQL)
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=silver_ai_db
-DB_USERNAME=your_db_user
-DB_PASSWORD=your_db_password
-
-# AI & Google Auth
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URI=https://your-backend-domain.com/api/auth/google/callback
-
-# Sanction & CORS
-SANCTUM_STATEFUL_DOMAINS=your-frontend-domain.com
-SESSION_DOMAIN=.your-frontend-domain.com
-```
-
-### Step 3: Database & Permissions
+### Step 4: Run Commands via SSH
+1.  Enable **SSH Access** in your Hostinger hPanel.
+2.  Connect via Terminal: `ssh your_username@server_ip`
+3.  Navigate to the folder: `cd silver_backend`
+4.  Run optimizations:
 ```bash
+/usr/local/bin/composer install --no-dev # Hostinger uses full path for composer
 php artisan migrate --force
 php artisan db:seed --class=DatabaseSeeder
-chmod -R 775 storage bootstrap/cache
-chown -R www-data:www-data .
+php artisan config:cache
 ```
+
+### Step 5: Storage Symlink
+Since you can't run `php artisan storage:link` easily to the `public_html` folder, create a simple route or a PHP script to run `symlink('/home/user/silver_backend/storage/app/public', '/home/user/public_html/storage');`.
 
 ---
 
-## 3. Frontend Deployment (Next.js - Cloudflare Pages)
+## 3. Frontend Deployment (Next.js at /app)
 
-Cloudflare Pages is recommended for the Elara Intelligence Suite due to its edge performance.
+To serve the Next.js app at `https://elara.silverantacademy.com/app` on shared hosting:
 
-1.  Connect your GitHub repository to **Cloudflare Pages**.
-2.  Set the **Build command**: `npm run build`
-3.  Set the **Build directory**: `.next`
-4.  **Environment Variables**:
-    *   `NEXT_PUBLIC_API_URL`: `https://your-backend-domain.com/api`
+### Step 1: Configure basePath
+I have updated your `next.config.ts` with `basePath: '/app'`. This ensures all internal links and assets are prefixed correctly.
+
+### Step 2: Build and Upload
+1.  Run `npm run build` locally.
+2.  If you are using static export (`output: 'export'`), upload the contents of `out/` to a folder named `app` inside your `public_html`.
+3.  If you are using a Node.js server (Hostinger Node.js selector), follow Hostinger's guide to point the site to the subpath.
+
+### Step 3: API Connection
+*   `NEXT_PUBLIC_API_URL`: `https://elara.silverantacademy.com/api`
 
 ---
 
 ## 4. Final Verification
 
-1.  **CORS Check**: Ensure `laravel-backend/config/cors.php` includes your frontend domain in the `allowed_origins` array.
+1.  **CORS Check**: Ensure `laravel-backend/config/cors.php` includes `https://elara.silverantacademy.com`.
 2.  **Sanctum**: Ensure the frontend is sending the `Authorization: Bearer [token]` header (this is handled automatically by `aiGatewayService.ts`).
-3.  **Favicon**: Verify that the browser tab shows the Silver Ant icon (updated in `src/app/layout.tsx`).
+3.  **Google Callback**: The Google console redirect MUST match: `https://elara.silverantacademy.com/api/auth/google/callback`.
 
 ---
 

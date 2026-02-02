@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Silver AI | Elara",
+  title: "Silver AI | Elara Intelligence Suite",
   description: "Advanced AI Assistant powered by Silver Ant Marketing",
+  icons: {
+    icon: '/icon.webp',
+  },
 };
 
 export default function RootLayout({
