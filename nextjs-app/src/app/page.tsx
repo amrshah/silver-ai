@@ -21,11 +21,12 @@ import {
   renameThread as renameThreadApi,
   moveThread as moveThreadApi,
   getAnts,
-  createAnt as createAntApi
+  createAnt as createAntApi,
+  API_BASE_URL
 } from '@/services/aiGatewayService';
 import { Menu } from 'lucide-react';
 
-export default function Home() {
+function ChatApp() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -102,25 +103,23 @@ export default function Home() {
       setCurrentThreadIdState(thread);
     }
 
-    const ant = searchParams.get('ant');
-    if (ant && ant !== activeAntId.toString()) {
-      setActiveAntId(ant);
+    const antId = searchParams.get('ant');
+    if (antId && antId !== activeAntId.toString()) {
+      setActiveAntId(antId);
     }
-  }, [searchParams]);
+  }, [searchParams, viewMode, currentThreadId, activeAntId]);
 
   const fetchAnts = useCallback(async () => {
-    if (!isAuthenticated) return;
     try {
       const data = await getAnts();
-      setSystemAnts(data.filter((a: AntDefinition) => a.isSystem || a.isGlobal));
-      setUserAnts(data.filter((a: AntDefinition) => !a.isSystem && !a.isGlobal));
-    } catch (error) {
-      console.error("Failed to fetch ants:", error);
+      setSystemAnts(data.filter((a: any) => a.category === 'system'));
+      setUserAnts(data.filter((a: any) => a.category !== 'system'));
+    } catch (err) {
+      console.error('Failed to fetch ants:', err);
     }
-  }, [isAuthenticated]);
+  }, []);
 
   const fetchThreads = useCallback(async () => {
-    if (!isAuthenticated) return;
     try {
       const data = await getThreads();
       const formattedThreads: ChatThread[] = data.map((t: any) => ({
@@ -128,24 +127,28 @@ export default function Home() {
         title: t.title || 'Untitled Session',
         antId: t.ant_id || 'default-assistant',
         folderId: t.folder_id,
-        messages: [],
+        messages: (t.messages || []).map((m: any) => ({
+          id: m.id.toString(),
+          sender: m.role === 'user' ? 'user' : 'model',
+          text: m.content,
+          timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now()
+        })),
         lastUpdated: new Date(t.updated_at).getTime()
       }));
       setThreads(formattedThreads);
-    } catch (error) {
-      console.error("Failed to fetch threads:", error);
+    } catch (err) {
+      console.error('Failed to fetch threads:', err);
     }
-  }, [isAuthenticated]);
+  }, []);
 
   const fetchFolders = useCallback(async () => {
-    if (!isAuthenticated) return;
     try {
       const data = await getFolders();
       setFolders(data);
-    } catch (error) {
-      console.error("Failed to fetch folders:", error);
+    } catch (err) {
+      console.error('Failed to fetch folders:', err);
     }
-  }, [isAuthenticated]);
+  }, []);
 
   // Check auth on mount
   useEffect(() => {
@@ -158,6 +161,9 @@ export default function Home() {
             setUser(userData);
             setIsAuthenticated(true);
             setSettings(prev => ({ ...prev, userRole: userData.role || 'General Executive' }));
+            fetchThreads();
+            fetchFolders();
+            fetchAnts();
           } else {
             setIsAuthenticated(false);
           }
@@ -169,7 +175,7 @@ export default function Home() {
       }
     };
     checkAuth();
-  }, []);
+  }, [fetchThreads, fetchFolders, fetchAnts]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -177,51 +183,52 @@ export default function Home() {
     }
   }, [settings, isAuthenticated]);
 
-  // Load data when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchThreads();
-      fetchFolders();
-      fetchAnts();
-    }
-  }, [isAuthenticated, fetchThreads, fetchFolders, fetchAnts]);
-
   // Load messages when thread ID changes (e.g., via URL navigation)
   useEffect(() => {
-    const loadThreadMessages = async () => {
-      if (currentThreadId && isAuthenticated) {
-        try {
-          const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-          const data = await fetch(`${apiBaseUrl}/chat/threads/${currentThreadId}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-              'Accept': 'application/json'
-            }
-          }).then(res => res.json());
-
-          const formattedMessages: Message[] = (data?.messages || []).map((m: any) => ({
-            id: m.id.toString(),
-            sender: m.role === 'user' ? 'user' : 'model',
-            text: m.content,
-            timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now()
-          }));
-          setMessages(formattedMessages);
-
-          // Sync active ant
-          const thread = threads.find(t => t.id === currentThreadId);
-          if (thread) {
-            const ant = [...systemAnts, ...userAnts].find(a => a.id.toString() === thread.antId.toString()) || systemAnts[0];
-            if (ant && ant.id !== activeAntId) {
-              setActiveAntId(ant.id);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch thread messages:", error);
+    if (currentThreadId && isAuthenticated) {
+      const thread = threads.find(t => t.id === currentThreadId);
+      if (thread) {
+        setMessages(thread.messages || []);
+        if (thread.antId) {
+          setActiveAntId(thread.antId);
         }
+      } else {
+        const loadThreadMessages = async () => {
+          try {
+            const data = await fetch(`${API_BASE_URL}/chat/threads/${currentThreadId}`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                'Accept': 'application/json'
+              }
+            }).then(res => res.json());
+
+            const formattedMessages: Message[] = (data?.messages || []).map((m: any) => ({
+              id: m.id.toString(),
+              sender: m.role === 'user' ? 'user' : 'model',
+              text: m.content,
+              timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now()
+            }));
+            setMessages(formattedMessages);
+
+            // Sync active ant
+            const currentThread = threads.find(t => t.id === currentThreadId);
+            if (currentThread) {
+              const ant = [...systemAnts, ...userAnts].find(a => a.id.toString() === currentThread.antId.toString()) || systemAnts[0];
+              if (ant && ant.id !== activeAntId) {
+                setActiveAntId(ant.id);
+              }
+            }
+          } catch (err) {
+            console.error('Failed to load thread messages:', err);
+            setMessages([]);
+          }
+        };
+        loadThreadMessages();
       }
-    };
-    loadThreadMessages();
-  }, [currentThreadId, isAuthenticated]);
+    } else if (!currentThreadId) {
+      setMessages([]);
+    }
+  }, [currentThreadId, isAuthenticated, activeAntId]); // Removed threads from dependencies to prevent clearing messages during sync
 
   // Handle responsive sidebar
   useEffect(() => {
@@ -244,13 +251,19 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    await logoutFromApi();
-    setIsAuthenticated(false);
-    setUser(null);
-    setThreads([]);
-    setFolders([]);
-    setCurrentThreadId(null);
-    setMessages([]);
+    try {
+      await logoutFromApi();
+      localStorage.removeItem('auth_token'); // Changed from silver_ai_token to auth_token
+      setIsAuthenticated(false);
+      setUser(null);
+      setThreads([]);
+      setFolders([]);
+      setCurrentThreadId(null);
+      setMessages([]);
+      router.push('/');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
   };
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
@@ -279,38 +292,9 @@ export default function Home() {
   };
 
   const handleThreadSelect = async (threadId: string) => {
-    const thread = threads.find(t => t.id === threadId);
-    if (thread) {
-      const ant = systemAnts.find(a => a.id === thread.antId) || userAnts.find(a => a.id === thread.antId) || systemAnts[0];
-      setCurrentThreadId(threadId);
-
-      try {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-        const data = await fetch(`${apiBaseUrl}/chat/threads/${threadId}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-            'Accept': 'application/json'
-          }
-        }).then(res => res.json());
-
-        const formattedMessages: Message[] = (data?.messages || []).map((m: any) => ({
-          id: m.id.toString(),
-          sender: m.role === 'user' ? 'user' : 'model',
-          text: m.content,
-          timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now()
-        }));
-        setMessages(formattedMessages);
-      } catch (error) {
-        setMessages([]);
-      }
-
-      setActiveAnt(ant);
-      setViewMode(ViewMode.CHAT);
-      resetChatSession();
-    }
-    if (window.innerWidth < 768) {
-      setSidebarOpen(false);
-    }
+    setCurrentThreadId(threadId);
+    setViewMode(ViewMode.CHAT);
+    if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
   const handleDeleteThread = async (threadId: string) => {
@@ -322,8 +306,9 @@ export default function Home() {
         setMessages([]);
         setViewMode(ViewMode.ANTS_HUB);
       }
-    } catch (error) {
-      console.error("Failed to delete thread:", error);
+    } catch (err) {
+      console.error("Failed to delete thread:", err);
+      alert('Failed to delete thread');
     }
   };
 
@@ -369,21 +354,16 @@ export default function Home() {
     if (update.provisioned) {
       fetchAnts();
     }
-    if (update.forceRefresh) {
-      // Use a more targeted fetch if possible, or just re-fetch thread list silently
-      getThreads().then(data => {
-        const formattedThreads: ChatThread[] = data.map((t: any) => ({
-          id: t.id,
-          title: t.title || 'Untitled Session',
-          antId: t.ant_id || 'default-assistant',
-          folderId: t.folder_id,
-          messages: [],
-          lastUpdated: new Date(t.updated_at).getTime()
-        }));
-        setThreads(formattedThreads);
-      });
+
+    // Update current thread ID if it was a new chat that now has a real database ID
+    if (update.id && update.id !== currentThreadId) {
+      setCurrentThreadId(update.id);
     }
-  }, [fetchAnts]); // Removed fetchThreads from dependencies to avoid cycles
+
+    if (update.forceRefresh) {
+      fetchThreads();
+    }
+  }, [fetchAnts, fetchThreads, currentThreadId]);
 
   const handleAntCreate = async (antData: AntDefinition) => {
     try {
@@ -491,5 +471,20 @@ export default function Home() {
         {renderContent()}
       </main>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#ea580c] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[#c4c4c4]/60 font-bold tracking-[0.3em] uppercase text-[10px]">Initializing Architecture...</p>
+        </div>
+      </div>
+    }>
+      <ChatApp />
+    </React.Suspense>
   );
 }

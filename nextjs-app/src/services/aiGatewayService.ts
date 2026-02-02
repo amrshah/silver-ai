@@ -2,7 +2,7 @@
  * Silver AI - Laravel Backend Gateway Service
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://elara.silverantacademy.com/api';
 
 import { AntDefinition } from '../types';
 

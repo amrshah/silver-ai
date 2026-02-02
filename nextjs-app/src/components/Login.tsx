@@ -147,6 +147,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                             )}
                             <span className="text-white">Corporate Google Account</span>
                         </button>
+
+                        <button
+                            type="button"
+                            onClick={() => { setEmail('demo@silverai.com'); setPassword('12345678'); }}
+                            className="w-full py-3 rounded-xl font-bold transition-all border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/10 active:scale-[0.98] text-[11px] uppercase tracking-widest text-indigo-400 mt-2"
+                        >
+                            Quick Access: Demo Strategist
+                        </button>
                     </form>
 
                     <div className="mt-8 pt-8 border-t border-white/10 text-center">

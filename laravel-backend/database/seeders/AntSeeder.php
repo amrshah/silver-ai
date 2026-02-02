@@ -133,6 +133,12 @@ class AntSeeder extends Seeder
                     'ant_id' => $app->id,
                     'role_name' => $role
                 ]);
+
+                // Assign to demo role for broad access
+                AntRole::firstOrCreate([
+                    'ant_id' => $app->id,
+                    'role_name' => 'Enterprise Demo Account'
+                ]);
             }
         }
     }

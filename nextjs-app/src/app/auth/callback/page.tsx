@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { handleGoogleCallback } from '@/services/aiGatewayService';
 import { Loader2 } from 'lucide-react';
 
-export default function GoogleCallback() {
+function CallbackHandler() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function GoogleCallback() {
         };
 
         processCallback();
-    }, []);
+    }, [router, searchParams]);
 
     if (error) {
         return (
@@ -58,5 +58,20 @@ export default function GoogleCallback() {
                 <p className="text-[#c4c4c4]/60 font-bold tracking-[0.3em] uppercase text-[10px]">Processing Corporate Secure Login...</p>
             </div>
         </div>
+    );
+}
+
+export default function GoogleCallback() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-12 h-12 text-[#ea580c] animate-spin" />
+                    <p className="text-[#c4c4c4]/60 font-bold tracking-[0.3em] uppercase text-[10px]">Initializing Secure Handshake...</p>
+                </div>
+            </div>
+        }>
+            <CallbackHandler />
+        </Suspense>
     );
 }

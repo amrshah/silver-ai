@@ -4,6 +4,7 @@
 - **Backend**: Laravel 11 (PHP 8.2+).
 - **Frontend**: Next.js 14+ (App Router).
 - **Database**: SQLite (Local development).
+- **Branding**: Silver AI Hub (Enterprise Intelligence Suite).
 - **Styling**: Tailwind CSS (Dark theme: `#0f0f0f`).
 - **Icons**: Lucide React.
 - **Infrastructure**: Dockerized (Docker Compose).
@@ -28,3 +29,5 @@
 ## 4. Development Workflow
 - **State Persistence**: A `PLAN.md` exists in the root to track migration and development progress.
 - **RBAC**: Handled by `amrshah/laravel-arbac` on the backend.
+- **SEO/Privacy**: Global `noindex` policy enforced via `robots.txt` and meta tags.
+- **Demo Access**: One-click demo accounts provided for rapid intelligence suite exploration.

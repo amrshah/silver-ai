@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             'sales'           => ['name' => 'Sales Lead',      'email' => 'sales@elara.com',   'title' => 'Sales Executive'],
             'hr'              => ['name' => 'HR Manager',      'email' => 'hr@elara.com',      'title' => 'Human Resources'],
             'project manager' => ['name' => 'PM Lead',         'email' => 'pm@elara.com',      'title' => 'Project Manager'],
+            'demo'            => ['name' => 'Demo Strategist', 'email' => 'demo@silverai.com', 'title' => 'Enterprise Demo Account'],
         ];
 
         foreach ($demoUsers as $roleName => $data) {

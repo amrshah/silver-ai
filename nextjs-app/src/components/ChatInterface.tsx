@@ -155,7 +155,7 @@ Global Context: ${settings.globalContext || 'No additional context provided.'}
                 {
                     id: responseMsgId,
                     sender: Sender.MODEL,
-                    text: 'Elara is crafting your image...',
+                    text: `${activeAnt.name} is crafting your image...`,
                     isStreaming: true,
                     timestamp: Date.now(),
                 }
@@ -210,9 +210,9 @@ Global Context: ${settings.globalContext || 'No additional context provided.'}
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
                             <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center text-[#c4c4c4] mb-8 shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-500 overflow-hidden p-4">
-                                <img src="https://silverantmarketing.com/wp-content/uploads/2021/06/header-light-logo-sam.webp" alt="Elara" className="w-full h-full object-contain" />
+                                <img src="https://silverantmarketing.com/wp-content/uploads/2021/06/header-light-logo-sam.webp" alt={activeAnt.name} className="w-full h-full object-contain" />
                             </div>
-                            <h2 className="text-3xl font-extrabold text-white mb-3 tracking-tight">Meet Elara</h2>
+                            <h2 className="text-3xl font-extrabold text-white mb-3 tracking-tight">Meet {activeAnt.name}</h2>
                             <p className="text-gray-400 max-w-md text-lg font-normal leading-relaxed">Your advanced AI strategist specifically tuned for {activeAnt.name}.</p>
 
                             <div className="mt-10 grid grid-cols-2 gap-3 w-full max-w-sm">
@@ -233,7 +233,7 @@ Global Context: ${settings.globalContext || 'No additional context provided.'}
                         >
                             {msg.sender === Sender.MODEL && (
                                 <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex-shrink-0 flex items-center justify-center text-[#c4c4c4] shadow-sm mt-1 overflow-hidden p-1.5">
-                                    <img src="https://silverantmarketing.com/wp-content/uploads/2021/06/header-light-logo-sam.webp" alt="Elara" className="w-full h-full object-contain" />
+                                    <img src="https://silverantmarketing.com/wp-content/uploads/2021/06/header-light-logo-sam.webp" alt={activeAnt.name} className="w-full h-full object-contain" />
                                 </div>
                             )}
 
@@ -299,7 +299,7 @@ Global Context: ${settings.globalContext || 'No additional context provided.'}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder={`Message Elara for ${activeAnt.name} assistance...`}
+                            placeholder={`Message ${activeAnt.name} for assistance...`}
                             className="flex-1 bg-transparent text-white px-5 py-3 rounded-2xl focus:outline-none resize-none max-h-60 overflow-y-auto font-normal placeholder:font-normal leading-relaxed custom-scrollbar"
                             style={{ minHeight: '44px' }}
                         />

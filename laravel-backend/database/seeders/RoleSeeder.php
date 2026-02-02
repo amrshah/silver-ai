@@ -30,5 +30,6 @@ class RoleSeeder extends Seeder
         \Spatie\Permission\Models\Role::findOrCreate('customer service');
         \Spatie\Permission\Models\Role::findOrCreate('hr');
         \Spatie\Permission\Models\Role::findOrCreate('project manager');
+        \Spatie\Permission\Models\Role::findOrCreate('demo');
     }
 }

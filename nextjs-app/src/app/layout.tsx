@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   icons: {
     icon: '/icon.webp',
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({
