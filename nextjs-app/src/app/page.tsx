@@ -190,8 +190,6 @@ export default function Home() {
   useEffect(() => {
     const loadThreadMessages = async () => {
       if (currentThreadId && isAuthenticated) {
-        // Only load if current messages don't match or are empty
-        // Actually, always reload for now to stay in sync with the thread
         try {
           const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
           const data = await fetch(`${apiBaseUrl}/chat/threads/${currentThreadId}`, {
@@ -201,15 +199,15 @@ export default function Home() {
             }
           }).then(res => res.json());
 
-          const formattedMessages: Message[] = data.messages.map((m: any) => ({
+          const formattedMessages: Message[] = (data?.messages || []).map((m: any) => ({
             id: m.id.toString(),
             sender: m.role === 'user' ? 'user' : 'model',
             text: m.content,
-            timestamp: new Date(m.created_at).getTime()
+            timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now()
           }));
           setMessages(formattedMessages);
 
-          // Also sync active ant if needed
+          // Sync active ant
           const thread = threads.find(t => t.id === currentThreadId);
           if (thread) {
             const ant = [...systemAnts, ...userAnts].find(a => a.id.toString() === thread.antId.toString()) || systemAnts[0];
@@ -223,7 +221,7 @@ export default function Home() {
       }
     };
     loadThreadMessages();
-  }, [currentThreadId, isAuthenticated, threads, systemAnts, userAnts]);
+  }, [currentThreadId, isAuthenticated]);
 
   // Handle responsive sidebar
   useEffect(() => {
@@ -295,11 +293,11 @@ export default function Home() {
           }
         }).then(res => res.json());
 
-        const formattedMessages: Message[] = data.messages.map((m: any) => ({
+        const formattedMessages: Message[] = (data?.messages || []).map((m: any) => ({
           id: m.id.toString(),
           sender: m.role === 'user' ? 'user' : 'model',
           text: m.content,
-          timestamp: new Date(m.created_at).getTime()
+          timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now()
         }));
         setMessages(formattedMessages);
       } catch (error) {
@@ -372,9 +370,20 @@ export default function Home() {
       fetchAnts();
     }
     if (update.forceRefresh) {
-      fetchThreads();
+      // Use a more targeted fetch if possible, or just re-fetch thread list silently
+      getThreads().then(data => {
+        const formattedThreads: ChatThread[] = data.map((t: any) => ({
+          id: t.id,
+          title: t.title || 'Untitled Session',
+          antId: t.ant_id || 'default-assistant',
+          folderId: t.folder_id,
+          messages: [],
+          lastUpdated: new Date(t.updated_at).getTime()
+        }));
+        setThreads(formattedThreads);
+      });
     }
-  }, [fetchThreads, fetchAnts]);
+  }, [fetchAnts]); // Removed fetchThreads from dependencies to avoid cycles
 
   const handleAntCreate = async (antData: AntDefinition) => {
     try {

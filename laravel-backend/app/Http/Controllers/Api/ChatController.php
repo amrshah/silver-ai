@@ -86,6 +86,21 @@ class ChatController extends Controller
                   });
         })->get(['name', 'description', 'category']);
 
+        // Fetch active ant for self-knowledge
+        $activeAnt = null;
+        if ($request->ant_id) {
+            $activeAnt = \App\Models\Ant::where('id', $request->ant_id)->first();
+        }
+
+        $selfKnowledge = "\n\n[SYSTEM_SELF_KNOWLEDGE]\n";
+        $selfKnowledge .= "Platform: Silver AI Core (Proprietary Agentic Ecosystem).\n";
+        $selfKnowledge .= "Architecture: Specialized Multi-Ant Network.\n";
+        if ($activeAnt) {
+            $selfKnowledge .= "Your Identity: You are '{$activeAnt->name}', a specialized Ant within Silver AI.\n";
+            $selfKnowledge .= "Your Designated Purpose: {$activeAnt->description}\n";
+        }
+        $selfKnowledge .= "System Awareness: You are contextually aware of being part of a larger platform. You understand that you collaborate with other specialized Ants. If you observe any technical inconsistencies (like a session title mismatch), you are authorized to acknowledge it and state your commitment to maintaining the integrity of the user's workflow.\n";
+
         $antContext = "\n\n[DETERMINISTIC CONTEXT]\nThe user's role is: {$role}. Available ants: " . $availableAnts->toJson() . ".\n";
         $antContext .= "If the user asks for recommendations, suggest both existing and NEW specialized ants.\n";
         $antContext .= "CRITICAL: If the user says 'okay create them' or similar, respond with exactly [CREATE_ANT] followed by a JSON object for each ant: {\"name\": \"...\", \"description\": \"...\", \"icon\": \"...\", \"system_instruction\": \"...\", \"category\": \"...\"}.";
@@ -95,7 +110,7 @@ class ChatController extends Controller
         $domainEnforcement .= "- If asked for something outside your domain (e.g., Marketing ant asked for Code, or Coder asked for Marketing), you MUST decline. Say: 'I am specialized strictly in [Domain]. For [Task], please use one of our [Relevant Category] ants.'\n";
         $domainEnforcement .= "- NEVER provide even 'basic' help for out-of-domain tasks. Partial help is a violation of protocol.\n";
 
-        $combinedSystemInstruction = ($request->system_instruction ?? "You are a helpful assistant.") . $antContext . $domainEnforcement;
+        $combinedSystemInstruction = ($request->system_instruction ?? "You are a helpful assistant.") . $selfKnowledge . $antContext . $domainEnforcement;
 
         // Call AI
         $this->aiService->setIndustry($request->industry ?? 'silver_marketing')

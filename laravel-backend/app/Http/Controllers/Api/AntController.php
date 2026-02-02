@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Ant;
 use App\Models\AntRole;
+use Illuminate\Http\Request;
 
 class AntController extends Controller
 {
@@ -43,7 +44,7 @@ class AntController extends Controller
 
         $user = $request->user();
         
-        $applet = Ant::create([
+        $ant = Ant::create([
             'user_id' => $user->id,
             'name' => $request->name,
             'description' => $request->description,
@@ -59,13 +60,13 @@ class AntController extends Controller
         if ($request->has('assigned_roles') && $user->is_admin) {
             foreach ($request->assigned_roles as $roleName) {
                 AntRole::create([
-                    'applet_id' => $applet->id,
+                    'ant_id' => $ant->id,
                     'role_name' => $roleName
                 ]);
             }
         }
 
-        return response()->json($applet->load('roles'), 201);
+        return response()->json($ant->load('roles'), 201);
     }
 
     /**
@@ -80,38 +81,38 @@ class AntController extends Controller
     /**
      * Toggle visibility/sharing.
      */
-    public function update(Request $request, Ant $applet)
+    public function update(Request $request, Ant $ant)
     {
         $user = $request->user();
-        if ($applet->user_id !== $user->id && !$user->is_admin) abort(403);
+        if ($ant->user_id !== $user->id && !$user->is_admin) abort(403);
 
-        $applet->update($request->only([
+        $ant->update($request->only([
             'name', 'description', 'icon', 'system_instruction', 'category', 'is_public'
         ]));
 
         if ($user->is_admin) {
-            $applet->update($request->only(['is_system', 'is_global']));
+            $ant->update($request->only(['is_system', 'is_global']));
             
             if ($request->has('assigned_roles')) {
-                $applet->roles()->delete();
+                $ant->roles()->delete();
                 foreach ($request->assigned_roles as $roleName) {
                     AntRole::create([
-                        'applet_id' => $applet->id,
+                        'ant_id' => $ant->id,
                         'role_name' => $roleName
                     ]);
                 }
             }
         }
 
-        return $applet->load('roles');
+        return $ant->load('roles');
     }
 
-    public function destroy(Request $request, Ant $applet)
+    public function destroy(Request $request, Ant $ant)
     {
         $user = $request->user();
-        if ($applet->user_id !== $user->id && !$user->is_admin) abort(403);
+        if ($ant->user_id !== $user->id && !$user->is_admin) abort(403);
         
-        $applet->delete();
+        $ant->delete();
         return response()->json(['success' => true]);
     }
 }

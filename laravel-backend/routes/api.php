@@ -15,8 +15,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ant Management
     Route::get('/ants', [AntController::class, 'index']);
     Route::post('/ants', [AntController::class, 'store']);
-    Route::patch('/ants/{applet}', [AntController::class, 'update']);
-    Route::delete('/ants/{applet}', [AntController::class, 'destroy']);
+    Route::patch('/ants/{ant}', [AntController::class, 'update']);
+    Route::delete('/ants/{ant}', [AntController::class, 'destroy']);
     Route::get('/admin/ants', [AntController::class, 'adminIndex']);
 
     // Prompts
