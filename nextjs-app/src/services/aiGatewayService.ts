@@ -51,6 +51,24 @@ export async function login(email: string, password: string) {
     return data;
 }
 
+export async function getGoogleAuthUrl() {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        headers: { 'Accept': 'application/json' }
+    });
+    return await response.text();
+}
+
+export async function handleGoogleCallback(queryParams: string) {
+    const response = await fetch(`${API_BASE_URL}/auth/google/callback${queryParams}`, {
+        headers: { 'Accept': 'application/json' }
+    });
+    const data = await response.json();
+    if (response.ok && data.access_token) {
+        localStorage.setItem('auth_token', data.access_token);
+    }
+    return data;
+}
+
 export async function logout() {
     try {
         await fetch(`${API_BASE_URL}/logout`, {
