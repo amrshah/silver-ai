@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
-import AppsLibrary from '@/components/AppsLibrary';
+import AntsHub from '@/components/AntsHub';
 import ChatInterface from '@/components/ChatInterface';
 import Settings from '@/components/Settings';
 import Login from '@/components/Login';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ViewMode, AppDefinition, Message, ChatThread, AppSettings, Folder } from '@/types';
-import { SYSTEM_APPS, MOCK_USER_APPS } from '@/constants';
+import { ViewMode, AntDefinition, Message, ChatThread, AppSettings, Folder } from '@/types';
+import { SYSTEM_ANTS, MOCK_USER_ANTS } from '@/constants';
 import {
   resetChatSession,
   getThreads,
@@ -20,8 +20,8 @@ import {
   deleteFolder as deleteFolderApi,
   renameThread as renameThreadApi,
   moveThread as moveThreadApi,
-  getApplets,
-  createApplet as createAppletApi
+  getAnts,
+  createAnt as createAntApi
 } from '@/services/aiGatewayService';
 import { Menu } from 'lucide-react';
 
@@ -39,10 +39,10 @@ export default function Home() {
     return Object.values(ViewMode).includes(mode) ? mode : ViewMode.CHAT;
   });
 
-  const [userApps, setUserApps] = useState<AppDefinition[]>([]);
-  const [systemApps, setSystemApps] = useState<AppDefinition[]>([]);
-  const [activeAppId, setActiveAppId] = useState<string | number>(() => {
-    return searchParams.get('app') || SYSTEM_APPS[0].id;
+  const [userAnts, setUserAnts] = useState<AntDefinition[]>([]);
+  const [systemAnts, setSystemAnts] = useState<AntDefinition[]>([]);
+  const [activeAntId, setActiveAntId] = useState<string | number>(() => {
+    return searchParams.get('ant') || SYSTEM_ANTS[0].id;
   });
   const [messages, setMessages] = useState<Message[]>([]);
   const [threads, setThreads] = useState<ChatThread[]>([]);
@@ -66,14 +66,14 @@ export default function Home() {
     router.push(`?${params.toString()}`);
   };
 
-  const setActiveApp = (app: AppDefinition) => {
-    setActiveAppId(app.id);
+  const setActiveAnt = (ant: AntDefinition) => {
+    setActiveAntId(ant.id);
     const params = new URLSearchParams(window.location.search);
-    params.set('app', app.id.toString());
+    params.set('ant', ant.id.toString());
     router.push(`?${params.toString()}`);
   };
 
-  const activeApp = [...systemApps, ...userApps].find(a => a.id.toString() === activeAppId.toString()) || systemApps[0] || SYSTEM_APPS[0];
+  const activeAnt = [...systemAnts, ...userAnts].find(a => a.id.toString() === activeAntId.toString()) || systemAnts[0] || SYSTEM_ANTS[0];
 
   const [settings, setSettings] = useState<AppSettings>(() => {
     const defaultSettings: AppSettings = {
@@ -102,20 +102,20 @@ export default function Home() {
       setCurrentThreadIdState(thread);
     }
 
-    const app = searchParams.get('app');
-    if (app && app !== activeAppId.toString()) {
-      setActiveAppId(app);
+    const ant = searchParams.get('ant');
+    if (ant && ant !== activeAntId.toString()) {
+      setActiveAntId(ant);
     }
   }, [searchParams]);
 
-  const fetchApplets = useCallback(async () => {
+  const fetchAnts = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
-      const data = await getApplets();
-      setSystemApps(data.filter((a: AppDefinition) => a.isSystem || a.isGlobal));
-      setUserApps(data.filter((a: AppDefinition) => !a.isSystem && !a.isGlobal));
+      const data = await getAnts();
+      setSystemAnts(data.filter((a: AntDefinition) => a.isSystem || a.isGlobal));
+      setUserAnts(data.filter((a: AntDefinition) => !a.isSystem && !a.isGlobal));
     } catch (error) {
-      console.error("Failed to fetch applets:", error);
+      console.error("Failed to fetch ants:", error);
     }
   }, [isAuthenticated]);
 
@@ -126,7 +126,7 @@ export default function Home() {
       const formattedThreads: ChatThread[] = data.map((t: any) => ({
         id: t.id,
         title: t.title || 'Untitled Session',
-        appId: t.app_id || 'default-assistant',
+        antId: t.ant_id || 'default-assistant',
         folderId: t.folder_id,
         messages: [],
         lastUpdated: new Date(t.updated_at).getTime()
@@ -182,9 +182,9 @@ export default function Home() {
     if (isAuthenticated) {
       fetchThreads();
       fetchFolders();
-      fetchApplets();
+      fetchAnts();
     }
-  }, [isAuthenticated, fetchThreads, fetchFolders, fetchApplets]);
+  }, [isAuthenticated, fetchThreads, fetchFolders, fetchAnts]);
 
   // Load messages when thread ID changes (e.g., via URL navigation)
   useEffect(() => {
@@ -209,12 +209,12 @@ export default function Home() {
           }));
           setMessages(formattedMessages);
 
-          // Also sync active app if needed
+          // Also sync active ant if needed
           const thread = threads.find(t => t.id === currentThreadId);
           if (thread) {
-            const app = [...systemApps, ...userApps].find(a => a.id.toString() === thread.appId.toString()) || systemApps[0];
-            if (app && app.id !== activeAppId) {
-              setActiveAppId(app.id);
+            const ant = [...systemAnts, ...userAnts].find(a => a.id.toString() === thread.antId.toString()) || systemAnts[0];
+            if (ant && ant.id !== activeAntId) {
+              setActiveAntId(ant.id);
             }
           }
         } catch (error) {
@@ -223,7 +223,7 @@ export default function Home() {
       }
     };
     loadThreadMessages();
-  }, [currentThreadId, isAuthenticated, threads, systemApps, userApps]);
+  }, [currentThreadId, isAuthenticated, threads, systemAnts, userAnts]);
 
   // Handle responsive sidebar
   useEffect(() => {
@@ -257,23 +257,23 @@ export default function Home() {
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
-  const createNewThread = (app: AppDefinition) => {
+  const createNewThread = (ant: AntDefinition) => {
     const newThread: ChatThread = {
       id: Date.now().toString(),
       title: 'New Chat',
-      appId: app.id.toString(),
+      antId: ant.id.toString(),
       messages: [],
       lastUpdated: Date.now()
     };
     setThreads([newThread, ...threads]);
     setCurrentThreadId(newThread.id);
     setMessages([]);
-    setActiveApp(app);
+    setActiveAnt(ant);
     resetChatSession();
   };
 
-  const handleAppSelect = (app: AppDefinition) => {
-    createNewThread(app);
+  const handleAntSelect = (ant: AntDefinition) => {
+    createNewThread(ant);
     setViewMode(ViewMode.CHAT);
     if (window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -283,7 +283,7 @@ export default function Home() {
   const handleThreadSelect = async (threadId: string) => {
     const thread = threads.find(t => t.id === threadId);
     if (thread) {
-      const app = systemApps.find(a => a.id === thread.appId) || userApps.find(a => a.id === thread.appId) || systemApps[0];
+      const ant = systemAnts.find(a => a.id === thread.antId) || userAnts.find(a => a.id === thread.antId) || systemAnts[0];
       setCurrentThreadId(threadId);
 
       try {
@@ -306,7 +306,7 @@ export default function Home() {
         setMessages([]);
       }
 
-      setActiveApp(app);
+      setActiveAnt(ant);
       setViewMode(ViewMode.CHAT);
       resetChatSession();
     }
@@ -322,7 +322,7 @@ export default function Home() {
       if (currentThreadId === threadId) {
         setCurrentThreadId(null);
         setMessages([]);
-        setViewMode(ViewMode.APPS_LIBRARY);
+        setViewMode(ViewMode.ANTS_HUB);
       }
     } catch (error) {
       console.error("Failed to delete thread:", error);
@@ -369,33 +369,33 @@ export default function Home() {
 
   const handleThreadUpdate = useCallback((update: any) => {
     if (update.provisioned) {
-      fetchApplets();
+      fetchAnts();
     }
     if (update.forceRefresh) {
       fetchThreads();
     }
-  }, [fetchThreads, fetchApplets]);
+  }, [fetchThreads, fetchAnts]);
 
-  const handleAppCreate = async (appData: AppDefinition) => {
+  const handleAntCreate = async (antData: AntDefinition) => {
     try {
-      const newApp = await createAppletApi({
-        name: appData.name,
-        description: appData.description,
-        system_instruction: appData.systemInstruction,
-        icon: appData.icon,
-        category: appData.category || 'general',
-        is_public: appData.isPublic || false,
-        is_system: appData.isSystem || false,
-        is_global: appData.isGlobal || false
+      const newAnt = await createAntApi({
+        name: antData.name,
+        description: antData.description,
+        system_instruction: antData.systemInstruction,
+        icon: antData.icon,
+        category: antData.category || 'general',
+        is_public: antData.isPublic || false,
+        is_system: antData.isSystem || false,
+        is_global: antData.isGlobal || false
       });
-      setUserApps(prev => [...prev, newApp]);
+      setUserAnts(prev => [...prev, newAnt]);
     } catch (error) {
-      console.error("Failed to create applet:", error);
+      console.error("Failed to create ant:", error);
     }
   };
 
   const handleNewChat = () => {
-    createNewThread(activeApp);
+    createNewThread(activeAnt);
     setViewMode(ViewMode.CHAT);
     if (window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -404,20 +404,20 @@ export default function Home() {
 
   const renderContent = () => {
     switch (viewMode) {
-      case ViewMode.APPS_LIBRARY:
+      case ViewMode.ANTS_HUB:
         return (
-          <AppsLibrary
-            systemApps={systemApps}
-            userApps={userApps}
-            onAppSelect={handleAppSelect}
-            onAppCreate={handleAppCreate}
+          <AntsHub
+            systemAnts={systemAnts}
+            userAnts={userAnts}
+            onAntSelect={handleAntSelect}
+            onAntCreate={handleAntCreate}
             isAdmin={!!user?.is_admin}
           />
         );
       case ViewMode.CHAT:
         return (
           <ChatInterface
-            activeApp={activeApp}
+            activeAnt={activeAnt}
             messages={messages}
             setMessages={setMessages}
             settings={settings}

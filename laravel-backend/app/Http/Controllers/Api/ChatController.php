@@ -36,7 +36,7 @@ class ChatController extends Controller
         $request->validate([
             'prompt' => 'required|string',
             'thread_id' => 'required|string',
-            'app_id' => 'nullable|string',
+            'ant_id' => 'nullable|string',
             'industry' => 'nullable|string',
             'persona' => 'nullable|string',
             'system_instruction' => 'nullable|string',
@@ -54,7 +54,7 @@ class ChatController extends Controller
             [
                 'user_id' => $user->id,
                 'title' => 'New Chat',
-                'app_id' => $request->app_id ?? 'default'
+                'ant_id' => $request->ant_id ?? 'default'
             ]
         );
 
@@ -75,9 +75,9 @@ class ChatController extends Controller
             ->get(['role', 'content'])
             ->toArray();
 
-        // Fetch available applets for context to help AI recommend
+        // Fetch available ants for context to help AI recommend
         $role = $user->role;
-        $availableApplets = \App\Models\Applet::where(function($query) use ($user, $role) {
+        $availableAnts = \App\Models\Ant::where(function($query) use ($user, $role) {
             $query->where('is_global', true)
                   ->orWhere('user_id', $user->id)
                   ->orWhere('is_public', true)
@@ -86,16 +86,16 @@ class ChatController extends Controller
                   });
         })->get(['name', 'description', 'category']);
 
-        $appletContext = "\n\n[DETERMINISTIC CONTEXT]\nThe user's role is: {$role}. Available applets: " . $availableApplets->toJson() . ".\n";
-        $appletContext .= "If the user asks for recommendations, suggest both existing and NEW specialized applets.\n";
-        $appletContext .= "CRITICAL: If the user says 'okay create them' or similar, respond with exactly [CREATE_APPLET] followed by a JSON object for each applet: {\"name\": \"...\", \"description\": \"...\", \"icon\": \"...\", \"system_instruction\": \"...\", \"category\": \"...\"}.";
+        $antContext = "\n\n[DETERMINISTIC CONTEXT]\nThe user's role is: {$role}. Available ants: " . $availableAnts->toJson() . ".\n";
+        $antContext .= "If the user asks for recommendations, suggest both existing and NEW specialized ants.\n";
+        $antContext .= "CRITICAL: If the user says 'okay create them' or similar, respond with exactly [CREATE_ANT] followed by a JSON object for each ant: {\"name\": \"...\", \"description\": \"...\", \"icon\": \"...\", \"system_instruction\": \"...\", \"category\": \"...\"}.";
 
         $domainEnforcement = "\n\nCRITICAL DOMAIN ENFORCEMENT:\n";
-        $domainEnforcement .= "You are a specialized intelligence applet. You MUST stay strictly within your designated expertise. Do NOT be multi-purpose.\n";
-        $domainEnforcement .= "- If asked for something outside your domain (e.g., Marketing app asked for Code, or Coder asked for Marketing), you MUST decline. Say: 'I am specialized strictly in [Domain]. For [Task], please use one of our [Relevant Category] applets.'\n";
+        $domainEnforcement .= "You are a specialized intelligence ant. You MUST stay strictly within your designated expertise. Do NOT be multi-purpose.\n";
+        $domainEnforcement .= "- If asked for something outside your domain (e.g., Marketing ant asked for Code, or Coder asked for Marketing), you MUST decline. Say: 'I am specialized strictly in [Domain]. For [Task], please use one of our [Relevant Category] ants.'\n";
         $domainEnforcement .= "- NEVER provide even 'basic' help for out-of-domain tasks. Partial help is a violation of protocol.\n";
 
-        $combinedSystemInstruction = ($request->system_instruction ?? "You are a helpful assistant.") . $appletContext . $domainEnforcement;
+        $combinedSystemInstruction = ($request->system_instruction ?? "You are a helpful assistant.") . $antContext . $domainEnforcement;
 
         // Call AI
         $this->aiService->setIndustry($request->industry ?? 'silver_marketing')
@@ -108,16 +108,16 @@ class ChatController extends Controller
             $combinedSystemInstruction
         );
 
-        // Detect [CREATE_APPLET] in response and provision them
+        // Detect [CREATE_ANT] in response and provision them
         $provisioned = false;
-        if (str_contains($answer, '[CREATE_APPLET]')) {
-            $parts = explode('[CREATE_APPLET]', $answer);
+        if (str_contains($answer, '[CREATE_ANT]')) {
+            $parts = explode('[CREATE_ANT]', $answer);
             foreach (array_slice($parts, 1) as $part) {
                 // Parse JSON
                 if (preg_match('/\{.*\}/s', $part, $matches)) {
                     $spec = json_decode($matches[0], true);
                     if ($spec && isset($spec['name'])) {
-                        \App\Models\Applet::create([
+                        \App\Models\Ant::create([
                             'user_id' => $user->id,
                             'name' => $spec['name'],
                             'description' => $spec['description'] ?? '',
@@ -131,7 +131,7 @@ class ChatController extends Controller
                 }
             }
             // Clean up the technical tag for the final user display
-            $answer = preg_replace('/\[CREATE_APPLET\].*?(\{.*?\})/s', '*(Provisioned: Applet created successfully!)*', $answer);
+            $answer = preg_replace('/\[CREATE_ANT\].*?(\{.*?\})/s', '*(Provisioned: Ant created successfully!)*', $answer);
         }
 
         // Store AI message

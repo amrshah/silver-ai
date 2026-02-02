@@ -1,6 +1,6 @@
-import { AppDefinition } from './types';
+import { AntDefinition } from './types';
 
-export const SYSTEM_APPS: AppDefinition[] = [
+export const SYSTEM_ANTS: AntDefinition[] = [
     {
         id: 'default-assistant',
         name: 'General Assistant',
@@ -39,7 +39,7 @@ export const SYSTEM_APPS: AppDefinition[] = [
     }
 ];
 
-export const MOCK_USER_APPS: AppDefinition[] = [
+export const MOCK_USER_ANTS: AntDefinition[] = [
     {
         id: 'user-app-1',
         name: 'Dad Joker',

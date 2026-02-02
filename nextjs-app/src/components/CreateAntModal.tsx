@@ -2,19 +2,19 @@
 
 import React, { useState } from 'react';
 import { X, Sparkles, Loader2 } from 'lucide-react';
-import { AppDefinition } from '../types';
+import { AntDefinition } from '../types';
 import IconPicker from './IconPicker';
 import IconRenderer from './IconRenderer';
 import { askChat } from '../services/aiGatewayService';
 
-interface CreateAppModalProps {
+interface CreateAntModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (app: AppDefinition) => void;
+    onCreate: (ant: AntDefinition) => void;
     isAdmin?: boolean;
 }
 
-const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCreate, isAdmin }) => {
+const CreateAntModal: React.FC<CreateAntModalProps> = ({ isOpen, onClose, onCreate, isAdmin }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [instruction, setInstruction] = useState('');
@@ -45,7 +45,7 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
         e.preventDefault();
         if (!name || !instruction) return;
 
-        const newApp: AppDefinition = {
+        const newAnt: AntDefinition = {
             id: `user-${Date.now()}`,
             name,
             description,
@@ -56,7 +56,7 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
             category: 'general'
         };
 
-        onCreate(newApp);
+        onCreate(newAnt);
         onClose();
         // Reset form
         setName('');
@@ -69,7 +69,7 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
             <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-lg rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-white/5">
-                    <h2 className="text-xl font-extrabold text-white tracking-tight">Create AI Applet</h2>
+                    <h2 className="text-xl font-extrabold text-white tracking-tight">Create AI Ant</h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
                         <X size={24} />
                     </button>
@@ -102,7 +102,7 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Applet Identity</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Ant Identity</label>
                         <input
                             type="text"
                             value={name}
@@ -170,7 +170,7 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
                                         className="w-4 h-4 rounded border-gray-800 bg-gray-950 text-[#ea580c] focus:ring-[#ea580c]/50"
                                     />
                                     <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-white uppercase">Global App</span>
+                                        <span className="text-xs font-bold text-white uppercase">Global Ant</span>
                                         <span className="text-[10px] text-gray-500">Available to all users</span>
                                     </div>
                                 </label>
@@ -182,8 +182,8 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
                                         className="w-4 h-4 rounded border-gray-800 bg-gray-950 text-[#ea580c] focus:ring-[#ea580c]/50"
                                     />
                                     <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-white uppercase">System App</span>
-                                        <span className="text-[10px] text-gray-500">Core platform applet</span>
+                                        <span className="text-xs font-bold text-white uppercase">System Ant</span>
+                                        <span className="text-[10px] text-gray-500">Core platform ant</span>
                                     </div>
                                 </label>
                             </div>
@@ -195,7 +195,7 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
                             type="submit"
                             className="w-full bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-[0.98] tracking-tight text-lg"
                         >
-                            Deploy Applet
+                            Deploy Ant
                         </button>
                     </div>
                 </form>
@@ -204,4 +204,4 @@ const CreateAppModal: React.FC<CreateAppModalProps> = ({ isOpen, onClose, onCrea
     );
 };
 
-export default CreateAppModal;
+export default CreateAntModal;

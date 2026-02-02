@@ -12,7 +12,7 @@ export interface Message {
     timestamp: number;
 }
 
-export interface AppDefinition {
+export interface AntDefinition {
     id: string | number;
     name: string;
     description: string;
@@ -28,7 +28,7 @@ export interface AppDefinition {
 export interface ChatThread {
     id: string;
     title: string;
-    appId: string;
+    antId: string;
     messages: Message[];
     lastUpdated: number;
     folderId?: number | null;
@@ -50,7 +50,7 @@ export interface Prompt {
 
 export enum ViewMode {
     CHAT = 'CHAT',
-    APPS_LIBRARY = 'APPS_LIBRARY',
+    ANTS_HUB = 'ANTS_HUB',
     SETTINGS = 'SETTINGS',
     PROFILE = 'PROFILE'
 }

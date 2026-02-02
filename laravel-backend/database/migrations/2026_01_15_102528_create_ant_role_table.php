@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('applet_role', function (Blueprint $table) {
+        Schema::create('ant_roles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('applet_id')->constrained()->onDelete('cascade');
+            $table->foreignId('ant_id')->constrained()->onDelete('cascade');
             $table->string('role_name');
             $table->timestamps();
         });
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('applet_role');
+        Schema::dropIfExists('ant_roles');
     }
 };

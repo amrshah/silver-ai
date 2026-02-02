@@ -4,9 +4,9 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-import { AppDefinition } from '../types';
+import { AntDefinition } from '../types';
 
-const mapApplet = (app: any): AppDefinition => ({
+const mapAnt = (app: any): AntDefinition => ({
     id: app.id,
     name: app.name,
     description: app.description,
@@ -64,44 +64,44 @@ export async function logout() {
     }
 }
 
-export async function getApplets(): Promise<AppDefinition[]> {
-    const response = await fetch(`${API_BASE_URL}/applets`, {
+export async function getAnts(): Promise<AntDefinition[]> {
+    const response = await fetch(`${API_BASE_URL}/ants`, {
         headers: getHeaders()
     });
     const data = await response.json();
-    return Array.isArray(data) ? data.map(mapApplet) : [];
+    return Array.isArray(data) ? data.map(mapAnt) : [];
 }
 
-export async function adminGetApplets(): Promise<AppDefinition[]> {
-    const response = await fetch(`${API_BASE_URL}/admin/applets`, {
+export async function adminGetAnts(): Promise<AntDefinition[]> {
+    const response = await fetch(`${API_BASE_URL}/admin/ants`, {
         headers: getHeaders()
     });
     const data = await response.json();
-    return Array.isArray(data) ? data.map(mapApplet) : [];
+    return Array.isArray(data) ? data.map(mapAnt) : [];
 }
 
-export async function createApplet(data: any): Promise<AppDefinition> {
-    const response = await fetch(`${API_BASE_URL}/applets`, {
+export async function createAnt(data: any): Promise<AntDefinition> {
+    const response = await fetch(`${API_BASE_URL}/ants`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(data)
     });
     const result = await response.json();
-    return mapApplet(result);
+    return mapAnt(result);
 }
 
-export async function updateApplet(id: number | string, data: any): Promise<AppDefinition> {
-    const response = await fetch(`${API_BASE_URL}/applets/${id}`, {
+export async function updateAnt(id: number | string, data: any): Promise<AntDefinition> {
+    const response = await fetch(`${API_BASE_URL}/ants/${id}`, {
         method: 'PATCH',
         headers: getHeaders(),
         body: JSON.stringify(data)
     });
     const result = await response.json();
-    return mapApplet(result);
+    return mapAnt(result);
 }
 
-export async function deleteApplet(id: number) {
-    const response = await fetch(`${API_BASE_URL}/applets/${id}`, {
+export async function deleteAnt(id: number) {
+    const response = await fetch(`${API_BASE_URL}/ants/${id}`, {
         method: 'DELETE',
         headers: getHeaders()
     });
@@ -113,7 +113,7 @@ export async function* streamMessage(
     systemInstruction: string,
     maxTokens: number = 10000,
     threadId?: string,
-    appId?: string
+    antId?: string
 ): AsyncGenerator<string, { thread: any, provisioned: boolean }, unknown> {
     try {
         const response = await fetch(`${API_BASE_URL}/chat/ask`, {
@@ -124,7 +124,7 @@ export async function* streamMessage(
                 system_instruction: systemInstruction,
                 max_tokens: maxTokens,
                 thread_id: threadId || Date.now().toString(),
-                app_id: appId,
+                ant_id: antId,
                 industry: 'silver_marketing',
                 persona: 'marketing_strategist'
             })
@@ -192,14 +192,14 @@ export async function deleteThread(threadId: string) {
     return await response.json();
 }
 
-export async function askChat(prompt: string, appId?: string, threadId?: string): Promise<string> {
+export async function askChat(prompt: string, antId?: string, threadId?: string): Promise<string> {
     const response = await fetch(`${API_BASE_URL}/chat/ask`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify({
             prompt,
             thread_id: threadId || `sys-refine-${Date.now()}`,
-            app_id: appId,
+            ant_id: antId,
             max_tokens: 4096,
             industry: 'silver_marketing',
             persona: 'marketing_strategist'

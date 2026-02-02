@@ -1,0 +1,11 @@
+{
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:silver-ai}/laravel-backend/database/database.sqlite",
+            "name": "proj-db"
+        }
+    ]
+}

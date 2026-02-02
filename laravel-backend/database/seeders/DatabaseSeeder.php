@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
-            AppletSeeder::class,
+            AntSeeder::class,
         ]);
 
         $user = User::updateOrCreate(

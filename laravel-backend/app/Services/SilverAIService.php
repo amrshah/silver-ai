@@ -43,13 +43,13 @@ class SilverAIService
         return $this;
     }
 
-    public function setPersona(string $personaKey): bool
+    public function setPersona(string $personaKey): self
     {
         if (!$this->activeIndustry || !isset($this->activeIndustry['personas'][$personaKey])) {
-            return false;
+            return $this;
         }
         $this->activePersona = $this->activeIndustry['personas'][$personaKey];
-        return true;
+        return $this;
     }
 
     public function ask(string $prompt, array $history = [], int $maxTokens = 2048, ?string $systemInstruction = null): string

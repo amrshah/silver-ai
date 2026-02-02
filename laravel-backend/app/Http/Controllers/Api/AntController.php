@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Applet;
-use App\Models\AppletRole;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Ant;
+use App\Models\AntRole;
 
-class AppletController extends Controller
+class AntController extends Controller
 {
     /**
      * Get all applets available to the user.
@@ -18,7 +16,7 @@ class AppletController extends Controller
         $user = $request->user();
         $role = $user->role;
 
-        return Applet::where(function($query) use ($user, $role) {
+        return Ant::where(function($query) use ($user, $role) {
             $query->where('is_global', true)
                   ->orWhere('user_id', $user->id)
                   ->orWhere('is_public', true)
@@ -45,7 +43,7 @@ class AppletController extends Controller
 
         $user = $request->user();
         
-        $applet = Applet::create([
+        $applet = Ant::create([
             'user_id' => $user->id,
             'name' => $request->name,
             'description' => $request->description,
@@ -60,7 +58,7 @@ class AppletController extends Controller
 
         if ($request->has('assigned_roles') && $user->is_admin) {
             foreach ($request->assigned_roles as $roleName) {
-                AppletRole::create([
+                AntRole::create([
                     'applet_id' => $applet->id,
                     'role_name' => $roleName
                 ]);
@@ -76,13 +74,13 @@ class AppletController extends Controller
     public function adminIndex(Request $request)
     {
         if (!$request->user()->is_admin) abort(403);
-        return Applet::with('roles')->get();
+        return Ant::with('roles')->get();
     }
 
     /**
      * Toggle visibility/sharing.
      */
-    public function update(Request $request, Applet $applet)
+    public function update(Request $request, Ant $applet)
     {
         $user = $request->user();
         if ($applet->user_id !== $user->id && !$user->is_admin) abort(403);
@@ -97,7 +95,7 @@ class AppletController extends Controller
             if ($request->has('assigned_roles')) {
                 $applet->roles()->delete();
                 foreach ($request->assigned_roles as $roleName) {
-                    AppletRole::create([
+                    AntRole::create([
                         'applet_id' => $applet->id,
                         'role_name' => $roleName
                     ]);
@@ -108,7 +106,7 @@ class AppletController extends Controller
         return $applet->load('roles');
     }
 
-    public function destroy(Request $request, Applet $applet)
+    public function destroy(Request $request, Ant $applet)
     {
         $user = $request->user();
         if ($applet->user_id !== $user->id && !$user->is_admin) abort(403);

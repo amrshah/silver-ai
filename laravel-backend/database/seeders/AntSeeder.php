@@ -2,17 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Models\Ant;
+use App\Models\AntRole;
 use Illuminate\Database\Seeder;
-use App\Models\Applet;
 
-class AppletSeeder extends Seeder
+
+class AntSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $globalApplets = [
+        $globalAnts = [
             [
                 'name' => 'General Assistant',
                 'description' => 'A helpful, harmless, and honest AI assistant for everyday tasks.',
@@ -33,8 +35,8 @@ class AppletSeeder extends Seeder
             ]
         ];
 
-        foreach ($globalApplets as $data) {
-             Applet::updateOrCreate(['name' => $data['name']], $data);
+        foreach ($globalAnts as $data) {
+             Ant::updateOrCreate(['name' => $data['name']], $data);
         }
 
         $roleSpecific = [
@@ -42,7 +44,7 @@ class AppletSeeder extends Seeder
                 [
                     'name' => 'Social Architect',
                     'description' => 'Viral content and engagement strategist.',
-                    'system_instruction' => 'You are a specialized Social Media Marketing (SMM) expert. Your domain is viral hooks, platform-specific engagement strategy, and social content planning. STRICT DOMAIN BOUNDARY: You are NOT a programmer or developer. If asked for code (HTML, CSS, JS, etc.), you must decline and suggest using a specialized Development applet.',
+                    'system_instruction' => 'You are a specialized Social Media Marketing (SMM) expert. Your domain is viral hooks, platform-specific engagement strategy, and social content planning. STRICT DOMAIN BOUNDARY: You are NOT a programmer or developer. If asked for code (HTML, CSS, JS, etc.), you must decline and suggest using a specialized Development Ant.',
                     'icon' => 'Share2',
                     'category' => 'marketing'
                 ],
@@ -90,7 +92,7 @@ class AppletSeeder extends Seeder
                 [
                     'name' => 'Code Wizard',
                     'description' => 'Expert senior software engineer specializing in clean, modern code.',
-                    'system_instruction' => 'You are a specialized Senior Software Engineer. Your domain is technical architecture, clean code implementation, and debugging across TS, React, and Python. STRICT DOMAIN BOUNDARY: You are NOT a marketer. If asked for SMM plans or marketing copy, you must decline and suggest a Marketing applet.',
+                    'system_instruction' => 'You are a specialized Senior Software Engineer. Your domain is technical architecture, clean code implementation, and debugging across TS, React, and Python. STRICT DOMAIN BOUNDARY: You are NOT a marketer. If asked for SMM plans or marketing copy, you must decline and suggest a Marketing Ant.',
                     'icon' => 'Code',
                     'category' => 'coding'
                 ],
@@ -106,7 +108,7 @@ class AppletSeeder extends Seeder
                 [
                     'name' => 'Muse',
                     'description' => 'A creative writing partner for stories, poems, and scripts.',
-                    'system_instruction' => 'You are Muse, a specialized Creative Writing partner. Your domain is fiction, poetry, and evocative storytelling. STRICT DOMAIN BOUNDARY: You do not provide SEO services or technical writing. If asked for SEO advice, suggest an SEO Strategist applet.',
+                    'system_instruction' => 'You are Muse, a specialized Creative Writing partner. Your domain is fiction, poetry, and evocative storytelling. STRICT DOMAIN BOUNDARY: You do not provide SEO services or technical writing. If asked for SEO advice, suggest an SEO Strategist Ant.',
                     'icon' => 'PenTool',
                     'category' => 'creative'
                 ],
@@ -124,11 +126,11 @@ class AppletSeeder extends Seeder
             foreach ($apps as $appData) {
                 $appData['is_system'] = true;
                 $appData['is_global'] = false;
-                $app = Applet::updateOrCreate(['name' => $appData['name']], $appData);
+                $app = Ant::updateOrCreate(['name' => $appData['name']], $appData);
                 
                 // Assign to role
-                \App\Models\AppletRole::firstOrCreate([
-                    'applet_id' => $app->id,
+                AntRole::firstOrCreate([
+                    'ant_id' => $app->id,
                     'role_name' => $role
                 ]);
             }

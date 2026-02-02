@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('id')->primary(); // Using string ID as per original sqlite setup
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title')->nullable();
-            $table->string('app_id')->nullable();
+            $table->string('ant_id')->nullable();
             $table->timestamps();
         });
     }

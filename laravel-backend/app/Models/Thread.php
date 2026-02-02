@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Thread extends Model
 {
-    protected $fillable = ['id', 'user_id', 'title', 'app_id', 'folder_id'];
+    protected $fillable = ['id', 'user_id', 'title', 'ant_id', 'folder_id'];
     
     public $incrementing = false;
     protected $keyType = 'string';

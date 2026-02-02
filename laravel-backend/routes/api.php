@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChatController;
-use App\Http\Controllers\Api\AppletController;
+use App\Http\Controllers\Api\AntController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -12,12 +12,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/user', [AuthController::class, 'update']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Applet Management
-    Route::get('/applets', [AppletController::class, 'index']);
-    Route::post('/applets', [AppletController::class, 'store']);
-    Route::patch('/applets/{applet}', [AppletController::class, 'update']);
-    Route::delete('/applets/{applet}', [AppletController::class, 'destroy']);
-    Route::get('/admin/applets', [AppletController::class, 'adminIndex']);
+    // Ant Management
+    Route::get('/ants', [AntController::class, 'index']);
+    Route::post('/ants', [AntController::class, 'store']);
+    Route::patch('/ants/{applet}', [AntController::class, 'update']);
+    Route::delete('/ants/{applet}', [AntController::class, 'destroy']);
+    Route::get('/admin/ants', [AntController::class, 'adminIndex']);
 
     // Prompts
     Route::get('/prompts', [ChatController::class, 'getPrompts']);

@@ -22,8 +22,8 @@ import {
     Eye,
     EyeOff
 } from 'lucide-react';
-import { AppSettings, Prompt, AppDefinition, Sender } from '../types';
-import { getPrompts, createPrompt, deletePrompt, updateProfile, adminGetApplets, updateApplet, deleteApplet as deleteAppletApi, getApplets, updatePrompt } from '../services/aiGatewayService';
+import { AppSettings, Prompt, AntDefinition, Sender } from '../types';
+import { getPrompts, createPrompt, deletePrompt, updateProfile, adminGetAnts, updateAnt, deleteAnt as deleteAntApi, getAnts, updatePrompt } from '../services/aiGatewayService';
 
 interface SettingsProps {
     settings: AppSettings;
@@ -33,13 +33,13 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user }) => {
     const [prompts, setPrompts] = useState<Prompt[]>([]);
-    const [adminApplets, setAdminApplets] = useState<any[]>([]);
-    const [userApps, setUserApps] = useState<AppDefinition[]>([]);
+    const [adminAnts, setAdminAnts] = useState<any[]>([]);
+    const [userAnts, setUserAnts] = useState<AntDefinition[]>([]);
     const [showPromptForm, setShowPromptForm] = useState(false);
     const [newPrompt, setNewPrompt] = useState({ title: '', content: '', category: 'General' });
     const [isLoadingAdmin, setIsLoadingAdmin] = useState(false);
-    const [editingApplet, setEditingApplet] = useState<any>(null);
-    const [editForm, setEditForm] = useState<Partial<AppDefinition>>({});
+    const [editingAnt, setEditingAnt] = useState<any>(null);
+    const [editForm, setEditForm] = useState<Partial<AntDefinition>>({});
     const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
     const [editPromptForm, setEditPromptForm] = useState({ title: '', content: '', category: 'General' });
 
@@ -48,46 +48,46 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
             const pData = await getPrompts();
             setPrompts(pData);
 
-            const aData = await getApplets();
-            setUserApps(aData.filter((a: AppDefinition) => !a.isSystem && !a.isGlobal));
+            const aData = await getAnts();
+            setUserAnts(aData.filter((a: AntDefinition) => !a.isSystem && !a.isGlobal));
 
             if (user?.is_admin) {
-                fetchAdminApplets();
+                fetchAdminAnts();
             }
         };
         fetchAll();
     }, [user]);
 
-    const fetchAdminApplets = async () => {
+    const fetchAdminAnts = async () => {
         setIsLoadingAdmin(true);
         try {
-            const data = await adminGetApplets();
-            setAdminApplets(data);
+            const data = await adminGetAnts();
+            setAdminAnts(data);
         } catch (error) {
-            console.error("Failed to fetch admin applets");
+            console.error("Failed to fetch admin ants");
         }
         setIsLoadingAdmin(false);
     };
 
-    const handleToggleGlobal = async (applet: AppDefinition) => {
-        const updated = await updateApplet(applet.id, { is_global: !applet.isGlobal });
-        setAdminApplets(adminApplets.map(a => a.id === applet.id ? { ...a, isGlobal: updated.isGlobal } : a));
+    const handleToggleGlobal = async (ant: AntDefinition) => {
+        const updated = await updateAnt(ant.id, { is_global: !ant.isGlobal });
+        setAdminAnts(adminAnts.map(a => a.id === ant.id ? { ...a, isGlobal: updated.isGlobal } : a));
     };
 
-    const handleTogglePublic = async (applet: AppDefinition) => {
-        const updated = await updateApplet(applet.id, { is_public: !applet.isPublic });
-        setUserApps(userApps.map(a => a.id === applet.id ? { ...a, isPublic: updated.isPublic } : a));
+    const handleTogglePublic = async (ant: AntDefinition) => {
+        const updated = await updateAnt(ant.id, { is_public: !ant.isPublic });
+        setUserAnts(userAnts.map(a => a.id === ant.id ? { ...a, isPublic: updated.isPublic } : a));
     };
 
-    const handleDeleteApplet = async (id: number) => {
-        if (confirm("Are you sure you want to delete this intelligence applet? This cannot be undone.")) {
-            await deleteAppletApi(id);
-            setAdminApplets(adminApplets.filter(a => a.id !== id));
-            setUserApps(userApps.filter(a => a.id !== id));
+    const handleDeleteAnt = async (id: number) => {
+        if (confirm("Are you sure you want to delete this intelligence ant? This cannot be undone.")) {
+            await deleteAntApi(id);
+            setAdminAnts(adminAnts.filter(a => a.id !== id));
+            setUserAnts(userAnts.filter(a => a.id !== id));
         }
     };
 
-    const handleToggleRole = async (appletId: number | string, role: string, currentRoles: any[]) => {
+    const handleToggleRole = async (antId: number | string, role: string, currentRoles: any[]) => {
         const roleNames = currentRoles.map(r => r.role_name);
         let newRoles;
         if (roleNames.includes(role)) {
@@ -96,8 +96,8 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
             newRoles = [...roleNames, role];
         }
 
-        const updated = await updateApplet(appletId, { assigned_roles: newRoles });
-        setAdminApplets(adminApplets.map(a => a.id === appletId ? { ...a, roles: updated.roles } : a));
+        const updated = await updateAnt(antId, { assigned_roles: newRoles });
+        setAdminAnts(adminAnts.map(a => a.id === antId ? { ...a, roles: updated.roles } : a));
     };
 
     const handleRoleChange = async (role: string) => {
@@ -150,8 +150,8 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
         setEditingPrompt(null);
     };
 
-    const handleEditApplet = (app: any) => {
-        setEditingApplet(app);
+    const handleEditAnt = (app: any) => {
+        setEditingAnt(app);
         setEditForm({
             name: app.name,
             description: app.description,
@@ -161,17 +161,17 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
         });
     };
 
-    const handleSaveApplet = async () => {
-        if (!editingApplet) return;
-        const updated = await updateApplet(editingApplet.id, {
+    const handleSaveAnt = async () => {
+        if (!editingAnt) return;
+        const updated = await updateAnt(editingAnt.id, {
             name: editForm.name,
             description: editForm.description,
             system_instruction: editForm.systemInstruction,
             category: editForm.category,
             icon: editForm.icon
         });
-        setAdminApplets(adminApplets.map(a => a.id === editingApplet.id ? { ...a, ...updated } : a));
-        setEditingApplet(null);
+        setAdminAnts(adminAnts.map(a => a.id === editingAnt.id ? { ...a, ...updated } : a));
+        setEditingAnt(null);
     };
 
     const roles = [
@@ -210,12 +210,12 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
                             </div>
                             <div className="p-8">
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-bold text-gray-400 mb-4 px-1 uppercase tracking-tight">Applet Infrastructure Management</h3>
+                                    <h3 className="text-sm font-bold text-gray-400 mb-4 px-1 uppercase tracking-tight">Ant Infrastructure Management</h3>
                                     {isLoadingAdmin ? (
                                         <div className="py-10 flex justify-center"><div className="w-6 h-6 border-2 border-[#ea580c] border-t-transparent rounded-full animate-spin"></div></div>
                                     ) : (
                                         <div className="grid grid-cols-1 gap-3">
-                                            {adminApplets.map(app => (
+                                            {adminAnts.map(app => (
                                                 <div key={app.id} className="p-6 bg-black/40 border border-white/5 rounded-3xl hover:border-white/10 transition-all space-y-6">
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-4">
@@ -234,9 +234,9 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <button
-                                                                onClick={() => handleEditApplet(app)}
+                                                                onClick={() => handleEditAnt(app)}
                                                                 className="p-2.5 bg-white/5 text-gray-400 rounded-xl hover:bg-white/10 hover:text-white transition-all"
-                                                                title="Edit Applet Core"
+                                                                title="Edit Ant Core"
                                                             >
                                                                 <Sliders size={18} />
                                                             </button>
@@ -248,7 +248,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
                                                                 {app.isGlobal ? <Globe2 size={18} /> : <EyeOff size={18} />}
                                                             </button>
                                                             <button
-                                                                onClick={() => handleDeleteApplet(app.id)}
+                                                                onClick={() => handleDeleteAnt(app.id)}
                                                                 className="p-2.5 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 transition-all"
                                                             >
                                                                 <Trash2 size={18} />
@@ -256,11 +256,11 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
                                                         </div>
                                                     </div>
 
-                                                    {editingApplet?.id === app.id && (
+                                                    {editingAnt?.id === app.id && (
                                                         <div className="mt-6 p-6 bg-white/5 rounded-2xl border border-[#ea580c]/20 space-y-4 animate-in slide-in-from-top-2 duration-300">
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div className="space-y-2">
-                                                                    <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-1">Applet Name</label>
+                                                                    <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-1">Ant Name</label>
                                                                     <input
                                                                         type="text"
                                                                         value={editForm.name}
@@ -297,13 +297,13 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
                                                             </div>
                                                             <div className="flex gap-2 pt-2">
                                                                 <button
-                                                                    onClick={handleSaveApplet}
+                                                                    onClick={handleSaveAnt}
                                                                     className="flex-1 bg-[#ea580c] text-white font-bold py-2.5 rounded-xl text-xs hover:bg-[#c2410c] transition-all"
                                                                 >
                                                                     Update Intelligence
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => setEditingApplet(null)}
+                                                                    onClick={() => setEditingAnt(null)}
                                                                     className="px-6 py-2.5 border border-white/10 text-gray-400 font-bold rounded-xl text-xs hover:bg-white/5"
                                                                 >
                                                                     Cancel
@@ -392,18 +392,18 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
                         </div>
                     </section>
 
-                    {/* My Applets Section */}
+                    {/* My Ants Section */}
                     <section className="bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden shadow-2xl">
                         <div className="px-8 py-5 border-b border-white/5 bg-white/5 flex items-center gap-3">
                             <Layers size={18} className="text-[#ea580c]" />
-                            <h2 className="font-bold text-white uppercase tracking-widest text-xs">My Intelligence Applets</h2>
+                            <h2 className="font-bold text-white uppercase tracking-widest text-xs">My Intelligence Ants</h2>
                         </div>
                         <div className="p-8">
                             <div className="space-y-4">
-                                {userApps.length === 0 ? (
-                                    <p className="text-center py-6 text-gray-600 text-[10px] font-bold uppercase tracking-widest">No custom applets created yet</p>
+                                {userAnts.length === 0 ? (
+                                    <p className="text-center py-6 text-gray-600 text-[10px] font-bold uppercase tracking-widest">No custom ants created yet</p>
                                 ) : (
-                                    userApps.map(app => (
+                                    userAnts.map(app => (
                                         <div key={app.id} className="flex items-center justify-between p-4 bg-black/40 border border-white/5 rounded-2xl">
                                             <div>
                                                 <p className="text-sm font-bold text-white">{app.name}</p>
@@ -418,7 +418,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSettingsChange, user })
                                                     {app.isPublic ? <Globe2 size={14} /> : <EyeOff size={14} />}
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteApplet(Number(app.id))}
+                                                    onClick={() => handleDeleteAnt(Number(app.id))}
                                                     className="p-2 text-gray-600 hover:text-red-500 transition-all"
                                                 >
                                                     <Trash2 size={14} />

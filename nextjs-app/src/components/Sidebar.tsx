@@ -134,11 +134,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </button>
 
                     <button
-                        onClick={() => onNavigate(ViewMode.APPS_LIBRARY)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${currentView === ViewMode.APPS_LIBRARY ? 'bg-white/10 text-white' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'}`}
+                        onClick={() => onNavigate(ViewMode.ANTS_HUB)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${currentView === ViewMode.ANTS_HUB ? 'bg-white/10 text-white' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'}`}
                     >
                         <LayoutGrid size={18} />
-                        Explore Applets
+                        Explore Ants
                     </button>
                 </div>
 

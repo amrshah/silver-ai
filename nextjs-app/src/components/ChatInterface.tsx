@@ -2,14 +2,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { Message, Sender, AppDefinition, AppSettings } from '../types';
+import { Message, Sender, AntDefinition, AppSettings } from '../types';
 import IconRenderer from './IconRenderer';
 import { streamMessage, generateImage } from '../services/aiGatewayService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 interface ChatInterfaceProps {
-    activeApp: AppDefinition;
+    activeAnt: AntDefinition;
     messages: Message[];
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
     settings: AppSettings;
@@ -17,7 +17,7 @@ interface ChatInterfaceProps {
     onThreadUpdate: (thread: any) => void;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ activeApp, messages, setMessages, settings, threadId, onThreadUpdate }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ activeAnt, messages, setMessages, settings, threadId, onThreadUpdate }) => {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -75,7 +75,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ activeApp, messages, setM
             let fullResponse = '';
 
             const combinedSystemInstruction = `
-${activeApp.systemInstruction}
+${activeAnt.systemInstruction}
 
 [GLOBAL BUSINESS CONTEXT]
 Business Name: ${settings.businessName || 'N/A'}
@@ -83,7 +83,7 @@ Industry: ${settings.industry || 'General'}
 Global Context: ${settings.globalContext || 'No additional context provided.'}
 `.trim();
 
-            const stream = streamMessage(userText, combinedSystemInstruction, settings.maxTokens, threadId || undefined, activeApp.id.toString());
+            const stream = streamMessage(userText, combinedSystemInstruction, settings.maxTokens, threadId || undefined, activeAnt.id.toString());
 
             let result;
             while (true) {
@@ -194,13 +194,13 @@ Global Context: ${settings.globalContext || 'No additional context provided.'}
 
     return (
         <div className="flex-1 flex flex-col h-full bg-[#0f0f0f] relative">
-            {/* Active Applet Header */}
+            {/* Active Ant Header */}
             <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-[#0f0f0f]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-center pointer-events-none">
                 <div className="flex items-center gap-2.5 px-4 py-1.5 bg-white/5 rounded-2xl border border-white/10 pointer-events-auto shadow-lg">
                     <div className="w-5 h-5 flex items-center justify-center text-[#c4c4c4]">
-                        <IconRenderer name={activeApp.icon || 'Sparkles'} size={16} />
+                        <IconRenderer name={activeAnt.icon || 'Sparkles'} size={16} />
                     </div>
-                    <span className="text-sm font-bold text-white tracking-tight">{activeApp.name}</span>
+                    <span className="text-sm font-bold text-white tracking-tight">{activeAnt.name}</span>
                 </div>
             </div>
 
@@ -213,7 +213,7 @@ Global Context: ${settings.globalContext || 'No additional context provided.'}
                                 <img src="https://silverantmarketing.com/wp-content/uploads/2021/06/header-light-logo-sam.webp" alt="Elara" className="w-full h-full object-contain" />
                             </div>
                             <h2 className="text-3xl font-extrabold text-white mb-3 tracking-tight">Meet Elara</h2>
-                            <p className="text-gray-400 max-w-md text-lg font-normal leading-relaxed">Your advanced AI strategist specifically tuned for {activeApp.name}.</p>
+                            <p className="text-gray-400 max-w-md text-lg font-normal leading-relaxed">Your advanced AI strategist specifically tuned for {activeAnt.name}.</p>
 
                             <div className="mt-10 grid grid-cols-2 gap-3 w-full max-w-sm">
                                 <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-xs text-gray-500 font-medium">
@@ -299,12 +299,12 @@ Global Context: ${settings.globalContext || 'No additional context provided.'}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder={`Message Elara for ${activeApp.name} assistance...`}
+                            placeholder={`Message Elara for ${activeAnt.name} assistance...`}
                             className="flex-1 bg-transparent text-white px-5 py-3 rounded-2xl focus:outline-none resize-none max-h-60 overflow-y-auto font-normal placeholder:font-normal leading-relaxed custom-scrollbar"
                             style={{ minHeight: '44px' }}
                         />
                         <div className="flex items-center gap-2 mb-0.5">
-                            {(activeApp.category === 'creative' || activeApp.id === 'creative-writer') && (
+                            {(activeAnt.category === 'creative' || activeAnt.id === 'creative-writer') && (
                                 <button
                                     onClick={handleGenerateImage}
                                     disabled={!input.trim() || isLoading || isGeneratingImage}

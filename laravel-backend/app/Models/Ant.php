@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Applet extends Model
+class Ant extends Model
 {
+    protected $table = 'ants';
     protected $fillable = [
         'user_id',
         'name',
@@ -31,6 +32,6 @@ class Applet extends Model
 
     public function roles()
     {
-        return $this->hasMany(AppletRole::class);
+        return $this->hasMany(AntRole::class);
     }
 }
